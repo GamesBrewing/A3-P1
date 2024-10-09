@@ -8,6 +8,7 @@
 
 long long arr[SIZE];
 long long totalSum = 0;
+pthread_mutex_t lock;
 
 void* sumPart(void* arg) {
     int thread_id = *(int*)arg;
@@ -16,6 +17,7 @@ void* sumPart(void* arg) {
     int end = (thread_id + 1) * chunk_size;
 
     long long temp;
+    pthread_mutex_lock(&lock); // lock the memory using mutex so this thread only access the needed memory. Prevents overlap.
     // Calculate partial sums
     for (int i = start; i < end; i++) {
         temp = totalSum;
@@ -23,7 +25,7 @@ void* sumPart(void* arg) {
         // sleep(rand()%2);
         totalSum = temp;
     }
-
+    pthread_mutex_unlock(&lock);
     pthread_exit(NULL);
 }
 
@@ -50,6 +52,6 @@ int main() {
 
     // Print the total sum;
     printf("Total Sum: %lld\n", totalSum);
-
+    pthread_mutex_destroy(&lock);
     return 0;
 }
